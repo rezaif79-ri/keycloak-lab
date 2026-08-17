@@ -1,0 +1,36 @@
+# --- secrets ---------------------------------------------------------------
+# real .env files carry KEYCLOAK_CLIENT_SECRET / DB creds — never commit them.
+# the .env.example templates ARE meant to be tracked, so un-ignore those.
+.env
+.env.*
+!.env.example
+!*/.env.example
+
+# --- frontend (React + Vite + TS) ------------------------------------------
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- backend (Go + Gin) -----------------------------------------------------
+# compiled output — this repo runs via `go run main.go`, nothing here should
+# ever be a build artifact worth committing.
+backend/kc-lab-backend
+backend/backend
+backend/main
+backend/*.exe
+backend/tmp/
+*.test
+
+# --- editors / OS ------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# --- misc ---------------------------------------------------------------
+*.log

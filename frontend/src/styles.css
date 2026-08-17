@@ -1,0 +1,25 @@
+* { box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; margin: 0; background: #0f1115; color: #e6e6e6; }
+
+.navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #171a21; border-bottom: 1px solid #2a2f3a; }
+.navbar-links a { color: #e6e6e6; margin-right: 1.25rem; text-decoration: none; }
+.navbar-links a:hover { text-decoration: underline; }
+.navbar-user { display: flex; align-items: center; gap: 0.75rem; }
+
+.app-content { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+.auth-page { max-width: 420px; margin: 4rem auto; text-align: center; }
+.auth-secondary { margin-top: 1rem; font-size: 0.9rem; color: #9aa0aa; }
+
+button { cursor: pointer; border: 1px solid #3a3f4b; background: #1f2430; color: #e6e6e6; padding: 0.5rem 1rem; border-radius: 6px; }
+button.primary { background: #4f7cff; border-color: #4f7cff; color: white; }
+button.link { background: none; border: none; color: #4f7cff; padding: 0; text-decoration: underline; }
+
+.demo-list { list-style: none; padding: 0; }
+.demo-list li { margin-bottom: 1.25rem; padding: 1rem; background: #171a21; border-radius: 8px; }
+.demo-list p { color: #9aa0aa; font-size: 0.9rem; margin: 0.4rem 0 0; }
+
+.error-banner { background: #3a1f22; border: 1px solid #742a30; color: #ff9a9a; padding: 0.75rem; border-radius: 6px; }
+.denied-panel { background: #171a21; padding: 1.5rem; border-radius: 8px; }
+
+pre { background: #0b0d11; padding: 1rem; border-radius: 6px; overflow-x: auto; }

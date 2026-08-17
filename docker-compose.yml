@@ -1,0 +1,83 @@
+version: '3.8'
+
+# ---------------------------------------------------------------------------
+# All ports here are DELIBERATELY non-standard so this stack never collides
+# with anything else you're running locally:
+#
+#   Keycloak admin/UI ......... http://localhost:8180
+#   Keycloak Postgres (exposed) localhost:5532  (psql -h localhost -p 5532)
+#   App Postgres (exposed) .... localhost:5533  (psql -h localhost -p 5533)
+#   App Postgres pgAdmin ...... http://localhost:5480
+#   Go backend (Gin) .......... http://localhost:9090
+#   React frontend (Vite) ..... http://localhost:5273
+# ---------------------------------------------------------------------------
+
+services:
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: kc-lab-keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak_pw
+    ports:
+      - "5532:5432"   # exposed so you can inspect Keycloak's own schema if curious
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    networks:
+      - kc-lab-net
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: kc-lab-keycloak
+    command: start-dev --http-port=8180
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin123
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_pw
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8180:8180"
+    depends_on:
+      - keycloak-db
+    networks:
+      - kc-lab-net
+
+  app-db:
+    image: postgres:16-alpine
+    container_name: kc-lab-app-db
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppass
+    ports:
+      - "5533:5432"   # exposed so you can inspect app tables with any Postgres client
+    volumes:
+      - app_db_data:/var/lib/postgresql/data
+    networks:
+      - kc-lab-net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: kc-lab-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5480:80"     # browse to inspect either Postgres instance visually
+    depends_on:
+      - app-db
+      - keycloak-db
+    networks:
+      - kc-lab-net
+
+networks:
+  kc-lab-net:
+    driver: bridge
+
+volumes:
+  keycloak_db_data:
+  app_db_data:
