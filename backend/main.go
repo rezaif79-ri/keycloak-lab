@@ -40,7 +40,7 @@ func main() {
 	{
 		// #1 RBAC — any authenticated user with the `document-viewer` role.
 		api.GET("/documents",
-			middleware.RequireRealmRole("document-viewer"),
+			middleware.RequireRealmRoles(false, []string{"document-viewer", "document-admin"}...),
 			handlers.ListDocuments,
 		)
 

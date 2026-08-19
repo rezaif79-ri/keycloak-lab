@@ -28,7 +28,7 @@ export default function App() {
           <Route
             path="/documents"
             element={
-              <ProtectedRoute requiredRole="document-viewer">
+              <ProtectedRoute requiredRoles={["document-viewer", "document-admin"]} requireAll={true}>
                 <DocumentsListPage />
               </ProtectedRoute>
             }

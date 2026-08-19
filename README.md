@@ -280,6 +280,82 @@ the second (viewer-user lacks `document-admin` and isn't the owner). Confirm
 this before running the actual frontend/backend, since it isolates policy
 misconfiguration from application bugs.
 
+### 2.11 Managing all of the above as code (recommended)
+
+Everything in §2.5–2.8 is clicking, and clicking drifts. Working through it
+once is worth doing — that's how the object model lands — but keeping it
+correct by hand does not scale past the first afternoon. `authz-sync` reads a
+checked-in spec file and reconciles the realm onto it:
+
+```bash
+cd backend
+go run ./cmd/authz-sync                 # plan: show drift, change nothing
+go run ./cmd/authz-sync -apply          # converge the realm onto the spec
+go run ./cmd/authz-sync -apply -prune   # also delete objects the spec omits
+go run ./cmd/authz-sync -export         # capture a hand-built realm as a spec
+go run ./cmd/authz-sync -evaluate alice # print alice's full verdict matrix
+```
+
+The spec lives in [`backend/authz/demo-realm.json`](backend/authz/demo-realm.json)
+and describes scopes, resources, policies and permissions by **name** — no
+UUIDs anywhere, so the file is portable between realms and readable in a diff.
+Name→UUID resolution is the tool's job.
+
+Two things make this worth more than a shell script:
+
+**It validates before it writes.** The spec is rejected outright for dangling
+references, permissions that apply no policies, scopes a permission governs but
+the resource doesn't carry, duplicate names, and — the one that actually bit
+this realm — invisible zero-width characters pasted into a name. None of those
+are visible in the admin console.
+
+It also rejects `UNANIMOUS` over two or more Role Policies, because that means
+"the caller must hold *both* roles at once", which is essentially never the
+intent. When you want "either role", use `AFFIRMATIVE`, or keep the permission
+unanimous and wrap the roles in an **aggregate policy** — which is what
+`policy-can-read` in the spec does:
+
+```json
+{
+  "name": "policy-can-read",
+  "type": "aggregate",
+  "policies": ["policy-document-viewer", "policy-document-admin"],
+  "decisionStrategy": "AFFIRMATIVE"
+}
+```
+
+That is the clean fix for the gap noted in §2.9: `document-admin` had no path
+to `document:GetObject` at all, so an admin could list documents but not open
+one.
+
+**Plan is read-only and diffs by name.** A drifted realm shows up as:
+
+```
+update permission  perm-invoice1-admin
+          scopes: -document:GetObject
+          policies: +policy-document-admin  -​policy-document-admin
+```
+
+Those two policy names look identical because the removed one carries a
+`U+200B`. That is the class of bug this whole approach exists to kill.
+
+> **Where the state lives.** Keycloak's `authz/resource-server/settings`
+> endpoint exports the entire config name-keyed and **UUID-free**, which is why
+> the diff can work on names alone. It's also why writes can't use it: the
+> per-object list endpoints (`/resource`, `/scope`, `/policy`) are the only
+> place UUIDs come from.
+
+Realm roles and groups are created if missing, since policies can't reference
+what doesn't exist. **Users are deliberately out of scope** — a User Policy
+resolves usernames to UUIDs and fails loudly if one is absent, rather than
+putting passwords in a config file. Create test users per §2.9 first.
+
+For a real deployment the same job belongs to the
+[Keycloak Terraform provider](https://registry.terraform.io/providers/keycloak/keycloak/latest/docs),
+which has the state management and drift detection this tool only approximates.
+Hand-rolling it here is the point: you see exactly which Admin API objects back
+each row of CLAUDE.md's model table.
+
 ## 3. Run the backend
 
 ```bash

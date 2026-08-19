@@ -1,0 +1,98 @@
+{
+  "client": "kc-lab-backend",
+
+  "realmRoles": ["document-viewer", "document-admin"],
+  "groups": ["/dept-finance"],
+
+  "scopes": ["document:GetObject", "document:Admin"],
+
+  "resources": [
+    {
+      "name": "document:invoice-1",
+      "type": "document",
+      "scopes": ["document:GetObject", "document:Admin"],
+      "attributes": {
+        "department": ["finance"],
+        "owner": ["alice"]
+      }
+    },
+    {
+      "name": "document:invoice-2",
+      "type": "document",
+      "scopes": ["document:GetObject", "document:Admin"],
+      "attributes": {
+        "department": ["finance"],
+        "owner": ["bob"]
+      }
+    }
+  ],
+
+  "policies": [
+    {
+      "name": "policy-document-viewer",
+      "type": "role",
+      "roles": ["document-viewer"]
+    },
+    {
+      "name": "policy-document-admin",
+      "type": "role",
+      "roles": ["document-admin"]
+    },
+    {
+      "name": "policy-can-read",
+      "type": "aggregate",
+      "policies": ["policy-document-viewer", "policy-document-admin"],
+      "decisionStrategy": "AFFIRMATIVE"
+    },
+    {
+      "name": "policy-tag-department",
+      "type": "group",
+      "groups": ["/dept-finance"]
+    },
+    {
+      "name": "policy-owner-alice",
+      "type": "user",
+      "users": ["alice"]
+    },
+    {
+      "name": "policy-owner-bob",
+      "type": "user",
+      "users": ["bob"]
+    }
+  ],
+
+  "permissions": [
+    {
+      "name": "perm-invoice1-getobject",
+      "type": "scope",
+      "resources": ["document:invoice-1"],
+      "scopes": ["document:GetObject"],
+      "policies": ["policy-can-read", "policy-tag-department"],
+      "decisionStrategy": "UNANIMOUS"
+    },
+    {
+      "name": "perm-invoice2-getobject",
+      "type": "scope",
+      "resources": ["document:invoice-2"],
+      "scopes": ["document:GetObject"],
+      "policies": ["policy-can-read", "policy-tag-department"],
+      "decisionStrategy": "UNANIMOUS"
+    },
+    {
+      "name": "perm-invoice1-admin",
+      "type": "scope",
+      "resources": ["document:invoice-1"],
+      "scopes": ["document:Admin"],
+      "policies": ["policy-document-admin", "policy-owner-alice"],
+      "decisionStrategy": "UNANIMOUS"
+    },
+    {
+      "name": "perm-invoice2-admin",
+      "type": "scope",
+      "resources": ["document:invoice-2"],
+      "scopes": ["document:Admin"],
+      "policies": ["policy-document-admin", "policy-owner-bob"],
+      "decisionStrategy": "UNANIMOUS"
+    }
+  ]
+}

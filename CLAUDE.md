@@ -98,6 +98,14 @@ here unless explicitly asked.
   swallowed errors, explicit `defer rows.Close()` after error checks — same
   standards as the rest of this engineer's Go work even though the layering
   differs.
+- `cmd/authz-sync` — config-as-code for the Authorization Services objects
+  (resources, scopes, policies, permissions), reconciling the realm onto
+  `authz/demo-realm.json` via the Admin REST API. This is the **only**
+  sanctioned migration-shaped thing in this repo; the no-Goose rule above
+  still holds for app data, and this tool manages Keycloak config, not
+  `app-db` schema. It is desired-state and idempotent, not a versioned
+  up/down ladder, because policy config has no meaningful "down". See
+  `README.md` §2.11 for why the spec is name-keyed and what it validates.
 
 ## 5. Frontend conventions (React + TypeScript + Vite)
 

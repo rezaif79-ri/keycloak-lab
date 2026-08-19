@@ -26,7 +26,7 @@ export default function DocumentsListPage() {
     <div>
       <h1>RBAC demo — document list</h1>
       <p>
-        Backend check: <code>RequireRealmRole("document-viewer")</code>. Response status:{' '}
+        Backend check: <code>RequireRealmRole("document-viewer" or "document-admin")</code>. Response status:{' '}
         <strong>{result.status}</strong>
       </p>
       {result.error && <p className="error-banner">Denied: {result.error}</p>}
